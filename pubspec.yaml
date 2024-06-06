@@ -1,0 +1,36 @@
+name: products_app
+description: "A new Flutter project."
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.1 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  equatable: ^2.0.0
+  badges: ^3.0.3
+  http: ^0.13.4
+  flutter_bloc: ^8.0.0
+  hydrated_bloc: ^8.0.0
+  shared_preferences: ^2.0.6
+
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+    - assets/
+    - assets/electronics.jpeg
+    - assets/jewelery.jpeg
+    - assets/men.jpeg
+    - assets/women.jpeg
