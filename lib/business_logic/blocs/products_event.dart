@@ -15,3 +15,13 @@ class FetchProductsByCategory extends ProductsEvent {
   @override
   List<Object> get props => [category];
 }
+
+class FetchProductsByCategoryAndRating extends ProductsEvent {
+  final String category;
+  final double minRating;
+
+  const FetchProductsByCategoryAndRating(this.category, this.minRating);
+
+  @override
+  List<Object> get props => [category, minRating];
+}

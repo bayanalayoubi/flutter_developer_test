@@ -5,46 +5,109 @@ import 'package:products_app/business_logic/blocs/products_event.dart';
 import 'package:products_app/business_logic/blocs/products_state.dart';
 import 'package:products_app/data/repositories/product_repository.dart';
 import 'package:products_app/presentation/pages/product_details.dart';
-import 'package:products_app/data/models/product.dart'; // Ensure you import the Rating model
+import 'package:products_app/data/models/product.dart';
 
-class ProductsPage extends StatelessWidget {
+class ProductsPage extends StatefulWidget {
   final String category;
 
   ProductsPage({required this.category, Key? key}) : super(key: key);
 
   @override
+  _ProductsPageState createState() => _ProductsPageState();
+}
+
+class _ProductsPageState extends State<ProductsPage> {
+  double _selectedMinRating = 0.0;
+  final TextEditingController _ratingController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _ratingController.text = _selectedMinRating.toString();
+  }
+
+  @override
+  void dispose() {
+    _ratingController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Products',
-        style: TextStyle(
-          color: Colors.white
-        ),),
+        title: Text(
+          'Products',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Color(0xFFA21C4F),
         iconTheme: IconThemeData(color: Colors.white),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 100,
+                  child: TextField(
+                    controller: _ratingController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'Min Rating',
+                      hintStyle: TextStyle(color: Colors.white),
+                      border: InputBorder.none,
+                    ),
+                    style: TextStyle(color: Colors.white),
+                    onSubmitted: (value) {
+                      setState(() {
+                        _selectedMinRating = double.tryParse(value) ?? 0.0;
+                        BlocProvider.of<ProductsBloc>(context).add(
+                          FetchProductsByCategoryAndRating(widget.category, _selectedMinRating),
+                        );
+                      });
+                    },
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.filter_list, color: Colors.white),
+                  onPressed: () {
+                    setState(() {
+                      _selectedMinRating = double.tryParse(_ratingController.text) ?? 0.0;
+                      BlocProvider.of<ProductsBloc>(context).add(
+                        FetchProductsByCategoryAndRating(widget.category, _selectedMinRating),
+                      );
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       backgroundColor: Colors.deepPurpleAccent[10],
       body: BlocProvider(
-        create: (context) =>
-        ProductsBloc(productRepository: ProductRepository())
-          ..add(FetchProductsByCategory(category)),
+        create: (context) => ProductsBloc(productRepository: ProductRepository())
+          ..add(FetchProductsByCategory(widget.category)),
         child: BlocBuilder<ProductsBloc, ProductsState>(
           builder: (context, state) {
             if (state is ProductsLoading) {
               return Center(child: CircularProgressIndicator());
             } else if (state is ProductsLoaded) {
+              final filteredProducts = state.products
+                  .where((product) => product.rating.rate >= _selectedMinRating)
+                  .toList();
               return ListView.builder(
-                itemCount: state.products.length,
+                itemCount: filteredProducts.length,
                 itemBuilder: (context, index) {
-                  final product = state.products[index];
+                  final product = filteredProducts[index];
                   return Card(
                     elevation: 4,
                     margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                    color: Colors.white, // Set card color to white
+                    color: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
                       side: BorderSide(
-                        color: Color(0xFFA21C4F), // Set the border color
+                        color: Color(0xFFA21C4F),
                         width: 2.0,
                       ),
                     ),
@@ -53,8 +116,7 @@ class ProductsPage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ProductDetailsPage(
-                                productId: product.id),
+                            builder: (context) => ProductDetailsPage(productId: product.id),
                           ),
                         );
                       },
@@ -64,8 +126,7 @@ class ProductsPage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ClipRRect(
-                              borderRadius:
-                              BorderRadius.circular(16.0),
+                              borderRadius: BorderRadius.circular(16.0),
                               child: Container(
                                 width: double.infinity,
                                 height: 150,
@@ -149,8 +210,7 @@ class ProductsPage extends StatelessWidget {
                 },
               );
             } else if (state is ProductsError) {
-              return Center(
-                  child: Text('Failed to load products: ${state.message}'));
+              return Center(child: Text('Failed to load products: ${state.message}'));
             } else {
               return Container();
             }

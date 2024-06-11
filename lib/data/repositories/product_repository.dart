@@ -23,4 +23,15 @@ class ProductRepository {
       throw Exception('Failed to load product details');
     }
   }
+
+  Future<List<Product>> fetchProductsByRating(double minRating) async {
+    final response = await http.get(Uri.parse('$baseUrl/products'));
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      List<Product> allProducts = data.map((json) => Product.fromJson(json)).toList();
+      return allProducts.where((product) => product.rating.rate >= minRating).toList();
+    } else {
+      throw Exception('Failed to load products');
+    }
+  }
 }

@@ -14,7 +14,7 @@ class ProductDetailsBloc extends Bloc<ProductDetailsEvent, ProductDetailsState> 
       FetchProductDetails event, Emitter<ProductDetailsState> emit) async {
     emit(ProductDetailsLoading());
     try {
-      final product = await productRepository.fetchProductDetails(event.id); // Ensure the correct property is accessed
+      final product = await productRepository.fetchProductDetails(event.id);
       emit(ProductDetailsLoaded(product));
     } catch (e) {
       emit(ProductDetailsError(e.toString()));
